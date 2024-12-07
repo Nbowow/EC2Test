@@ -28,6 +28,14 @@ pipeline {
             }
         }
 
+        stage('Build JAR') {
+            steps {
+                dir('backend') {
+                    sh './gradlew clean build -x test' // Gradle로 JAR 파일 빌드 (테스트 제외)
+                }
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
                 dir('backend') { // Dockerfile 위치로 이동
