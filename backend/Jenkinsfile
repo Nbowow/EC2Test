@@ -48,7 +48,7 @@ pipeline {
                                     docker pull ${DOCKER_HUB_REPO}:latest
                                     docker stop backend || true
                                     docker rm backend || true
-                                    docker run -d --name backend -p 8080:8080 ${DOCKER_HUB_REPO}:latest
+                                    docker run -d --name backend -p 8081:8081 ${DOCKER_HUB_REPO}:latest
                                     """
                                 )
                             ]
