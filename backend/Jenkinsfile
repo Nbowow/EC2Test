@@ -17,13 +17,17 @@ pipeline {
 
         stage('Build and Push Docker Image') {
             steps {
-                dir('backend') { // backend 디렉토리에서 작업
-                    configFileProvider([file(credentialsId: '8923306b-09e3-4c26-a663-87096387133f', targetLocation: 'application.yml')]) {
+                // application.yml 파일 포함
+                configFileProvider([configFile(fileId: '8923306b-09e3-4c26-a663-87096387133f', targetLocation: 'application.yml')]) {
+                    dir('backend') {
+                        // Docker 이미지 빌드 및 푸시
                         script {
-                            // Docker 이미지 빌드 및 Docker Hub에 푸시
-                            def app = docker.build("${DOCKER_HUB_REPO}:latest", ".")
-                            docker.withRegistry('', "${DOCKER_HUB_CREDENTIALS}") {
-                                app.push('latest')
+                            sh 'docker build -t ${DOCKER_HUB_REPO}:latest .'
+                            withCredentials([usernamePassword(credentialsId: "${DOCKER_HUB_CREDENTIALS}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                                sh """
+                                echo "${DOCKER_PASS}" | docker login -u "${DOCKER_USER}" --password-stdin
+                                docker push ${DOCKER_HUB_REPO}:latest
+                                """
                             }
                         }
                     }
