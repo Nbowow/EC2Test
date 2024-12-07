@@ -18,6 +18,10 @@ pipeline {
         stage('Prepare application.yml') {
             steps {
                 dir('backend') { // backend 디렉토리로 이동
+                    sh '''
+                    mkdir -p ./src/main/resources
+                    chmod -R 775 ./src/main
+                    '''
                     withCredentials([file(credentialsId: 'application.yml-credentials', variable: 'APPLICATION_YML')]) {
                         sh """
                         mkdir -p ./src/main/resources
