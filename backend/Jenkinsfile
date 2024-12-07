@@ -1,0 +1,76 @@
+pipeline {
+    agent any
+    environment {
+        DOCKER_HUB_REPO = 'Nbowow/EC2Test/server'
+        DOCKER_HUB_CREDENTIALS = 'docker-hub-credentials-id' // Jenkins에 저장한 Docker Hub 크리덴셜 ID
+        EC2_SERVER_IP = '3.34.192.220'
+        EC2_USER = 'ec2-user'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                // GitHub에서 코드 체크아웃
+                checkout scm
+            }
+        }
+
+        stage('Prepare application.yml') {
+            steps {
+                withCredentials([file(credentialsId: 'application.yml-credentials', variable: 'APPLICATION_YML')]) {
+                    sh """
+                    cp ${APPLICATION_YML} ./src/main/resources/application.yml
+                    """
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    sh 'docker build -t ${DOCKER_HUB_REPO}:latest .'
+                }
+            }
+        }
+
+        stage('Push to Docker Hub') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'e2464985-49fc-4b79-a021-009a43096f9f', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh """
+                    echo "${DOCKER_PASS}" | docker login -u "${DOCKER_USER}" --password-stdin
+                    docker push ${DOCKER_HUB_REPO}:latest
+                    """
+                }
+            }
+        }
+
+        stage('Deploy to EC2') {
+            steps {
+                sshPublisher(
+                    publishers: [
+                        sshPublisherDesc(
+                            configName: 'EC2_SSH', // Publish over SSH에서 설정한 이름
+                            transfers: [
+                                sshTransfer(
+                                    execCommand: """
+                                    docker pull ${DOCKER_HUB_REPO}:latest
+                                    docker stop backend || true
+                                    docker rm backend || true
+                                    docker run -d --name backend -p 8080:8080 ${DOCKER_HUB_REPO}:latest
+                                    """
+                                )
+                            ]
+                        )
+                    ]
+                )
+            }
+        }
+
+    }
+    post {
+        always {
+            // 빌드 결과 알림 (선택 사항)
+            echo "Pipeline execution completed!"
+        }
+    }
+}

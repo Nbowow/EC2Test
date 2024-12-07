@@ -12,18 +12,20 @@
 export default {
   data() {
     return {
-      message: "",
+      message: "", // 서버에서 가져온 메시지를 저장
     };
   },
   methods: {
     async fetchMessage() {
       try {
-        const response = await fetch(
-          "http://<EC2-Instance-IP>:8080/api/message"
-        );
-        this.message = await response.json().message;
+        const response = await fetch("http://localhost:8081/api/message?id=2"); // ID가 1인 메시지 요청
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json(); // JSON 응답 파싱
+        this.message = data.message; // "message" 값을 화면에 반영
       } catch (error) {
-        console.error("Error fetching message:", error);
+        console.error("Error fetching message:", error); // 에러 출력
       }
     },
   },
