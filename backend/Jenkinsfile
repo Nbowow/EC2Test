@@ -17,10 +17,12 @@ pipeline {
 
         stage('Prepare application.yml') {
             steps {
-                withCredentials([file(credentialsId: 'application.yml-credentials', variable: 'APPLICATION_YML')]) {
-                    sh """
-                    cp ${APPLICATION_YML} ./src/main/resources/application.yml
-                    """
+                dir('backend') { // backend 디렉토리로 이동
+                    withCredentials([file(credentialsId: 'application.yml-credentials', variable: 'APPLICATION_YML')]) {
+                        sh """
+                        cp ${APPLICATION_YML} ./src/main/resources/application.yml
+                        """
+                    }
                 }
             }
         }
