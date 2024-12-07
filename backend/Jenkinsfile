@@ -20,6 +20,7 @@ pipeline {
                 dir('backend') { // backend 디렉토리로 이동
                     withCredentials([file(credentialsId: 'application.yml-credentials', variable: 'APPLICATION_YML')]) {
                         sh """
+                        mkdir -p ./src/main/resources
                         cp ${APPLICATION_YML} ./src/main/resources/application.yml
                         """
                     }
