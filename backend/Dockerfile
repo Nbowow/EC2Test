@@ -8,8 +8,8 @@ WORKDIR /app
 COPY . .
 COPY application.yml src/main/resources/application.yml
 
-# 4. Gradle 빌드 실행 (빌드 로그 출력 및 네트워크 캐시 문제 해결)
-RUN chmod +x ./gradlew && ./gradlew clean build -x test --refresh-dependencies --no-daemon
+# 4. Gradle 빌드 실행
+RUN gradle clean build --no-daemon --stacktrace
 
 # 5. 빌드 결과 JAR 파일을 실행하도록 설정
 ENTRYPOINT ["java", "-jar", "build/libs/app.jar"]
