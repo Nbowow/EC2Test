@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        DOCKER_HUB_REPO = 'nbowow/ec2test/server'
+        DOCKER_HUB_REPO = 'nbowow_ec2test_server'
         DOCKER_HUB_CREDENTIALS = 'docker-credentials' // Jenkins에 저장한 Docker Hub 크리덴셜 ID
         EC2_SERVER_IP = '3.34.192.220'
         EC2_USER = 'ec2-user'
