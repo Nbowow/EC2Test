@@ -2,7 +2,7 @@ pipeline {
     agent any
     environment {
         DOCKER_HUB_REPO = 'nbowow/ec2test/server'
-        DOCKER_HUB_CREDENTIALS = 'docker-hub-credentials-id' // Jenkins에 저장한 Docker Hub 크리덴셜 ID
+        DOCKER_HUB_CREDENTIALS = 'docker-credentials' // Jenkins에 저장한 Docker Hub 크리덴셜 ID
         EC2_SERVER_IP = '3.34.192.220'
         EC2_USER = 'ec2-user'
     }
@@ -15,28 +15,18 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Build and Push Docker Image') {
             steps {
-                configFileProvider([
-                    configFile(fileId: 'application.yml-credentials', targetLocation: 'application.yml') // application.yml ID를 Jenkins에서 설정
-                ]) {
-                    dir('backend') { // Dockerfile 위치로 이동
+                dir('backend') { // backend 디렉토리에서 작업
+                    configFileProvider([file(credentialsId: 'application.yml-credentials', targetLocation: 'application.yml')]) {
                         script {
-                            // application.yml을 Docker 빌드 컨텍스트에 포함하여 이미지 빌드
+                            // Docker 이미지 빌드 및 Docker Hub에 푸시
                             def app = docker.build("${DOCKER_HUB_REPO}:latest", ".")
+                            docker.withRegistry('', "${DOCKER_HUB_CREDENTIALS}") {
+                                app.push('latest')
+                            }
                         }
                     }
-                }
-            }
-        }
-
-        stage('Push to Docker Hub') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'docker-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh """
-                    echo "${DOCKER_PASS}" | docker login -u "${DOCKER_USER}" --password-stdin
-                    docker push ${DOCKER_HUB_REPO}:latest
-                    """
                 }
             }
         }
