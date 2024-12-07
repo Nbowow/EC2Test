@@ -30,7 +30,7 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                script {
+                dir('backend') { // Dockerfile 위치로 이동
                     sh 'docker build -t ${DOCKER_HUB_REPO}:latest .'
                 }
             }
