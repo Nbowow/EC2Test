@@ -25,4 +25,4 @@ COPY --from=build /app/build/libs/backend-0.0.1-SNAPSHOT.jar app.jar
 COPY application.yml /config/application.yml
 
 # 9. Spring Boot 애플리케이션 실행
-ENTRYPOINT ["java", "-jar", "/app.jar", "--spring.config.additional-location=/config/application.yml"]
+ENTRYPOINT ["java", "-jar", "app.jar", "--spring.config.additional-location=/config/application.yml"]
