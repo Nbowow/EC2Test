@@ -19,7 +19,7 @@ FROM openjdk:17-jdk-slim
 WORKDIR /app
 
 # 7. 빌드된 JAR 파일 복사 (명확하게 이름 지정)
-COPY /app/build/libs/backend-0.0.1-SNAPSHOT.jar app.jar
+COPY --from=build /app/build/libs/backend-0.0.1-SNAPSHOT.jar app.jar
 
 # 8. 환경 설정 파일 복사
 COPY application.yml /config/application.yml
