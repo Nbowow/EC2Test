@@ -47,6 +47,9 @@ pipeline {
         }
 
         stage('Deploy to EC2') {
+	when {
+                changeset "backend/**"  // backend 폴더에 변경 사항이 있을 때만 실행
+            }
             steps {
                 sshPublisher(
                     publishers: [
