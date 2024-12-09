@@ -13,36 +13,40 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
-            steps {
-                script {
-                    // Node.js 의존성 설치
-                    sh 'npm install'
-                }
+        stage('Build Frontend') {
+            when {
+                changeset "frontend/**"  // frontend 폴더에 변경 사항이 있을 때만 실행
             }
-        }
-
-        stage('Build Project') {
             steps {
-                script {
-                    // Vue.js 프로젝트 빌드
-                    sh 'npm run build'
+                dir('frontend') {
+                    script {
+                        // Node.js 의존성 설치
+                        sh 'npm install'
+                        sh 'npm run build'
+                    }
                 }
+                
             }
         }
 
         stage('Build Docker Image') {
+            when {
+                changeset "frontend/**"  // frontend 폴더에 변경 사항이 있을 때만 실행
+            }
             steps {
-                script {
-                    // 기존 Docker 이미지를 삭제 (있을 경우)
-                    sh '''
-                    if docker images ${DOCKER_HUB_REPO} -q | grep -q .; then
-                        docker rmi -f ${DOCKER_HUB_REPO}:latest
-                    fi
-                    '''
-                    // Docker 이미지 빌드
-                    sh 'docker build -t ${DOCKER_HUB_REPO}:latest .'
+                dir('frontend') {
+                    script {
+                        // 기존 Docker 이미지를 삭제 (있을 경우)
+                        sh '''
+                        if docker images ${DOCKER_HUB_REPO} -q | grep -q .; then
+                            docker rmi -f ${DOCKER_HUB_REPO}:latest
+                        fi
+                        '''
+                        // Docker 이미지 빌드
+                        sh 'docker build -t ${DOCKER_HUB_REPO}:latest .'
+                    }
                 }
+                
             }
         }
 
@@ -70,9 +74,9 @@ pipeline {
                                 sshTransfer(
                                     execCommand: """
                                     docker pull ${DOCKER_HUB_REPO}:latest
-                                    docker stop ${CONTAINER_NAME} || true
-                                    docker rm ${CONTAINER_NAME} || true
-                                    docker run -d --name ${CONTAINER_NAME} -p 80:80 ${DOCKER_HUB_REPO}:latest
+                                    docker stop frontend || true
+                                    docker rm frontend || true
+                                    docker run -d --name frontend -p 3000:3000 ${DOCKER_HUB_REPO}:latest
                                     """
                                 )
                             ]
