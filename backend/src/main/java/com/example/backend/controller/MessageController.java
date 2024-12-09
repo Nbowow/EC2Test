@@ -21,7 +21,7 @@ public class MessageController {
     public Map<String, String> getMessage(@RequestParam Long id) {
         String content = messageService.getMessageById(id);
         Map<String, String> response = new HashMap<>();
-        log.info("hello");
+        log.info("helloooo");
         response.put("message", content);
         return response;
     }
