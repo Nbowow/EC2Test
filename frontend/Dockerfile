@@ -1,21 +1,38 @@
-# First stage: build the frontend application
-FROM node AS builder
+# Stage 1: Build the React app
+FROM node:16 AS build
 
+# Set the working directory
 WORKDIR /app
 
+# Copy the package.json and package-lock.json files
 COPY package*.json ./
 
-# Vite는 package.json에 이미 명시되어 있으므로 따로 설치할 필요 없음
+# Install dependencies
 RUN npm install
 
+# Copy the rest of the application code
 COPY . .
 
-# 빌드 단계에서 오류 발생 시 로그가 나올 수 있게 설정
+# Build the React app
 RUN npm run build
 
-# Second stage: serve the application with nginx
-FROM nginx:alpine
+# Check the contents of the dist directory
+RUN ls -la /app/dist
 
+# Stage 2: Serve the React app with a simple Node.js server
+FROM node:16
+
+# Set the working directory
+WORKDIR /app
+
+# Install serve globally
+RUN npm install -g serve
+
+# Copy the build output from the previous stage
+COPY --from=build /app/dist /app/dist
+
+# Expose port 3000
 EXPOSE 3000
-COPY ./default.conf /etc/nginx/conf.d/default.conf 
-COPY --from=builder /app/dist  /usr/share/nginx/html
+
+# Start the server
+CMD ["serve", "-s", "dist", "-l", "3000"]
