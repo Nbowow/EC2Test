@@ -5,6 +5,10 @@ pipeline {
         DOCKER_HUB_CREDENTIALS = 'docker-credentials' // Jenkins에 저장한 Docker Hub 크리덴셜 ID
     }
 
+    tools {
+        nodejs 'NodeJS 23.3.0' // 설정한 NodeJs 이름
+    }
+
     stages {
         stage('Checkout') {
             steps {
