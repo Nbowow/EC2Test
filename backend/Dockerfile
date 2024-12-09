@@ -1,5 +1,5 @@
 # 1. Gradle 빌드 환경을 위한 베이스 이미지
-FROM gradle:7.5.1-jdk-alpine AS build
+FROM gradle:7.5.1-jdk-alpine
 WORKDIR /app
 
 # 2. Gradle 관련 파일 복사 (의존성 캐싱을 위해)
@@ -19,7 +19,7 @@ FROM openjdk:17-jdk-slim
 WORKDIR /app
 
 # 7. 빌드된 JAR 파일 복사 (명확하게 이름 지정)
-COPY build/libs/backend-0.0.1-SNAPSHOT.jar app.jar
+COPY /build/libs/backend-0.0.1-SNAPSHOT.jar app.jar
 
 # 8. 환경 설정 파일 복사
 COPY application.yml /config/application.yml
