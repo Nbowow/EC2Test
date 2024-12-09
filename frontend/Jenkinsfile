@@ -1,0 +1,92 @@
+pipeline {
+    agent any
+    environment {
+        DOCKER_HUB_REPO = 'nambowoo/ec2test_client'
+        DOCKER_HUB_CREDENTIALS = 'docker-credentials' // Jenkins에 저장한 Docker Hub 크리덴셜 ID
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                // GitHub에서 코드 체크아웃
+                checkout scm
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                script {
+                    // Node.js 의존성 설치
+                    sh 'npm install'
+                }
+            }
+        }
+
+        stage('Build Project') {
+            steps {
+                script {
+                    // Vue.js 프로젝트 빌드
+                    sh 'npm run build'
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    // 기존 Docker 이미지를 삭제 (있을 경우)
+                    sh '''
+                    if docker images ${DOCKER_HUB_REPO} -q | grep -q .; then
+                        docker rmi -f ${DOCKER_HUB_REPO}:latest
+                    fi
+                    '''
+                    // Docker 이미지 빌드
+                    sh 'docker build -t ${DOCKER_HUB_REPO}:latest .'
+                }
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    // Docker Hub에 이미지 푸시
+                    withCredentials([usernamePassword(credentialsId: "${DOCKER_HUB_CREDENTIALS}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                        sh '''
+                        echo "${DOCKER_PASS}" | docker login -u "${DOCKER_USER}" --password-stdin
+                        docker push ${DOCKER_HUB_REPO}:latest
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Deploy to EC2') {
+            steps {
+                sshPublisher(
+                    publishers: [
+                        sshPublisherDesc(
+                            configName: 'EC2_SSH', // Publish over SSH 플러그인 설정 이름
+                            transfers: [
+                                sshTransfer(
+                                    execCommand: """
+                                    docker pull ${DOCKER_HUB_REPO}:latest
+                                    docker stop ${CONTAINER_NAME} || true
+                                    docker rm ${CONTAINER_NAME} || true
+                                    docker run -d --name ${CONTAINER_NAME} -p 80:80 ${DOCKER_HUB_REPO}:latest
+                                    """
+                                )
+                            ]
+                        )
+                    ]
+                )
+            }
+        }
+    }
+
+    post {
+        always {
+            // 빌드 결과 알림 (선택 사항)
+            echo "Pipeline execution completed!"
+        }
+    }
+}
