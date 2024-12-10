@@ -18,9 +18,9 @@ pipeline {
         }
 
         stage('Build Frontend') {
-            // when {
-            //     changeset "frontend/**"  // frontend 폴더에 변경 사항이 있을 때만 실행 함
-            // }
+            when {
+                changeset "frontend/**"  // frontend 폴더에 변경 사항이 있을 때만 실행 함
+            }
             steps {
                 dir('frontend') {
                     script {
@@ -34,9 +34,9 @@ pipeline {
         }
 
         stage('Build Docker Image') {
-            // when {
-            //     changeset "frontend/**"  // frontend 폴더에 변경 사항이 있을 때만 실행
-            // }
+            when {
+                changeset "frontend/**"  // frontend 폴더에 변경 사항이 있을 때만 실행
+            }
             steps {
                 dir('frontend') {
                     script {
