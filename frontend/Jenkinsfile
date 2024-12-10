@@ -80,7 +80,7 @@ pipeline {
                                     docker pull ${DOCKER_HUB_REPO}:latest
                                     docker stop frontend || true
                                     docker rm frontend || true
-                                    docker run -d --name frontend -p 3000:3000 ${DOCKER_HUB_REPO}:latest
+                                    docker run -d --name frontend --network application -p 3000:3000 ${DOCKER_HUB_REPO}:latest
                                     """
                                 )
                             ]
