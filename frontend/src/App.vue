@@ -18,7 +18,9 @@ export default {
   methods: {
     async fetchMessage() {
       try {
-        const response = await fetch("http://backend:8081/api/message?id=2"); // ID가 1인 메시지 요청
+        const response = await fetch(
+          "http://3.34.192.220:8081/api/message?id=2"
+        ); // ID가 1인 메시지 요청
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
